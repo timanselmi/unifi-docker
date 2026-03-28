@@ -120,7 +120,7 @@ The upgrade process is:
 ### AVX Requirement (x86-64)
 
 MongoDB 5.0 and later (including 8.0) **require AVX (Advanced Vector Extensions)** support in
-the CPU. MongoDB 3.6 had no such requirement.
+the CPU. MongoDB 4.4 and earlier had no such requirement.
 
 **Affected hardware:**
 
@@ -141,7 +141,7 @@ image. You will need to migrate your data to different hardware before upgrading
 
 MongoDB 5.0 and later require **ARMv8.2-A or newer**. MongoDB 3.6/4.x worked with ARMv8.0-A.
 
-| Device / SoC | ARM version | MongoDB 3.6 | MongoDB 5.0–8.0 |
+| Device / SoC | ARM version | MongoDB 3.6–4.4 | MongoDB 5.0–8.0 |
 |---|---|---|---|
 | Raspberry Pi 1 / 2 / 3 (32-bit) | ARMv7 | No | No |
 | Raspberry Pi 4 | ARMv8.0-A | Yes | **No** |
@@ -155,7 +155,7 @@ to a Pi 5 or other ARMv8.2-A+ capable host.
 
 ### Summary
 
-| Requirement | MongoDB 3.6 | MongoDB 8.0 |
+| Requirement | MongoDB 3.6–4.4 | MongoDB 8.0 |
 |---|---|---|
 | AVX CPU instructions (x86-64) | Not required | **Required** |
 | ARM minimum | ARMv8.0-A (64-bit) | **ARMv8.2-A** |
