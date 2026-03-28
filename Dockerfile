@@ -47,11 +47,11 @@ COPY docker-healthcheck.sh /usr/local/bin/
 COPY docker-build.sh /usr/local/bin/
 COPY functions /usr/unifi/functions
 COPY import_cert /usr/unifi/init.d/
-COPY migration/99-mongo-migrate.sh /usr/unifi/init.d/
+COPY migration/99-mongo-migrate.sh /usr/unifi/init.d/99-mongo-migrate
 COPY pre_build /usr/local/docker/pre_build
 RUN chmod +rx /usr/local/bin/docker-entrypoint.sh \
  && chmod +rx /usr/unifi/init.d/import_cert \
- && chmod +rx /usr/unifi/init.d/99-mongo-migrate.sh \
+ && chmod +rx /usr/unifi/init.d/99-mongo-migrate \
  && chmod +r  /usr/unifi/functions \
  && chmod +rx /usr/local/bin/docker-healthcheck.sh \
  && chmod +rx /usr/local/bin/docker-build.sh \
