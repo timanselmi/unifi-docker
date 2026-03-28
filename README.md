@@ -99,9 +99,64 @@ The upgrade process is:
 2. Stop the current container (see above)
 3. Enter `docker run...` with the newer container tag (see [Current Information](#current-information) section below.)
 
-## Migrating MongoDB (3.6 → 7.0)
+## Hardware Requirements: MongoDB 3.6 → 8.0
 
-UniFi 10.2.97+ requires MongoDB 7.0. MongoDB 3.6 data files are not compatible with 7.0,
+> **WARNING: This upgrade may break on your current hardware.**
+> MongoDB 5.0 introduced mandatory CPU instruction set requirements that MongoDB 3.6 did not
+> have. If your host machine does not meet these requirements, `mongod` will crash immediately
+> on startup with an `Illegal instruction` error — no data migration will be possible.
+> **Check your hardware before upgrading.**
+
+### AVX Requirement (x86-64)
+
+MongoDB 5.0 and later (including 8.0) **require AVX (Advanced Vector Extensions)** support in
+the CPU. MongoDB 3.6 had no such requirement.
+
+**Affected hardware:**
+
+- Intel Sandy Bridge / Ivy Bridge era CPUs (roughly 2011–2013) that support SSE4.2 but lack AVX
+- Any x86-64 CPU predating AVX (Intel Westmere and older, AMD Bulldozer and older)
+- VMs or containers explicitly configured to hide AVX from the guest
+
+If you are unsure whether your CPU supports AVX, run:
+
+```bash
+grep -o 'avx[^ ]*' /proc/cpuinfo | sort -u
+```
+
+If the output is empty, your host CPU cannot run MongoDB 5.0+ and therefore cannot run this
+image. You will need to migrate your data to different hardware before upgrading.
+
+### ARM Architecture Requirement
+
+MongoDB 5.0 and later require **ARMv8.2-A or newer**. MongoDB 3.6/4.x worked with ARMv8.0-A.
+
+| Device / SoC | ARM version | MongoDB 3.6 | MongoDB 5.0–8.0 |
+|---|---|---|---|
+| Raspberry Pi 1 / 2 / 3 (32-bit) | ARMv7 | No | No |
+| Raspberry Pi 4 | ARMv8.0-A | Yes | **No** |
+| Raspberry Pi 5 | ARMv8.2-A | Yes | Yes |
+| Most Raspberry Pi CM4 / NAS SoCs | ARMv8.0-A | Yes | **No** |
+| Apple Silicon (M-series) | ARMv8.5-A | Yes | Yes |
+
+**Raspberry Pi 4 users:** MongoDB 8.0 will not run on Pi 4 hardware regardless of OS or Docker
+version. You must either stay on an older image (MongoDB 3.6-compatible) or migrate your data
+to a Pi 5 or other ARMv8.2-A+ capable host.
+
+### Summary
+
+| Requirement | MongoDB 3.6 | MongoDB 8.0 |
+|---|---|---|
+| AVX CPU instructions (x86-64) | Not required | **Required** |
+| ARM minimum | ARMv8.0-A (64-bit) | **ARMv8.2-A** |
+| 32-bit x86 | Not supported | Not supported |
+| 32-bit ARM | Not supported | Not supported |
+
+---
+
+## Migrating MongoDB (3.6 → 8.0)
+
+UniFi 10.2.97+ requires MongoDB 8.0. MongoDB 3.6 data files are not compatible with 8.0,
 so a dump-and-restore migration is required. There are two paths depending on how you run
 the controller.
 
@@ -118,8 +173,8 @@ git pull                        # fetch new compose.yaml, backup.sh, restore.sh
 chmod +x backup.sh restore.sh
 ./backup.sh                     # dumps mongo:3.6 → ./mongo-backup/ (old stack must be up)
 docker compose down
-docker compose up -d mongo      # starts mongo:7.0 only — controller stays down
-./restore.sh                    # restores BSON dump into mongo:7.0
+docker compose up -d mongo      # starts mongo:8.0 only — controller stays down
+./restore.sh                    # restores BSON dump into mongo:8.0
 docker compose up -d            # bring up the full stack
 ```
 
