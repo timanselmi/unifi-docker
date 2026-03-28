@@ -57,7 +57,6 @@ RUN chmod +rx /usr/local/bin/docker-entrypoint.sh \
  && chmod +rx /usr/local/bin/docker-build.sh \
  && chmod -R +rx /usr/local/docker/pre_build
 
-# Push installing openjdk-8-jre first, so that the unifi package doesn't pull in openjdk-7-jre as a dependency? Else uncomment and just go with openjdk-7.
 RUN set -ex \
  && mkdir -p /usr/share/man/man1/ \
  && groupadd -r unifi -g $UNIFI_GID \

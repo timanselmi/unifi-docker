@@ -36,6 +36,7 @@ fi
 apt-get update
 apt-get install -qy --no-install-recommends \
     apt-transport-https \
+    ca-certificates \
     curl \
     dirmngr \
     gpg \
