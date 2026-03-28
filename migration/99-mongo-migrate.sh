@@ -14,7 +14,6 @@
 
 MARKER_FILE="${DATADIR}/.mongo_version_marker"
 DB_DIR="${DATADIR}/db"
-AUTOBACKUP_DIR="${DATADIR}/backup/autobackup"
 
 # Skip if using external MongoDB (docker-compose path)
 if [ -n "${DB_URI:-}" ]; then
@@ -28,30 +27,29 @@ fi
 
 # Marker absent + db directory exists → pre-8.0 data, needs archiving
 if [ -d "${DB_DIR}" ]; then
-    ARCHIVE_DIR="${DATADIR}/db_archive_$(date +%Y%m%d_%H%M%S)"
+    ARCHIVE_DIR="${DATADIR}/pre_migration_$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "${ARCHIVE_DIR}"
     log "MIGRATION: Old MongoDB data directory detected (no version marker present)."
-    log "MIGRATION: Archiving ${DB_DIR} → ${ARCHIVE_DIR}"
-    mv "${DB_DIR}" "${ARCHIVE_DIR}"
-    log "MIGRATION: Archive complete. MongoDB 8.0 will initialise a fresh database."
+    log "MIGRATION: Archiving all data → ${ARCHIVE_DIR}"
 
-    # Clear setup-completed flag so the first-run wizard appears
-    SYSPROPS="${DATADIR}/system.properties"
-    if [ -f "${SYSPROPS}" ] && grep -q "^is_setup_completed" "${SYSPROPS}"; then
-        sed -i '/^is_setup_completed/d' "${SYSPROPS}"
-        log "MIGRATION: Cleared is_setup_completed from system.properties — setup wizard will appear."
-    fi
+    # Move everything in DATADIR into the archive subfolder, skipping the
+    # archive dir itself (it lives inside DATADIR)
+    find "${DATADIR}" -maxdepth 1 -mindepth 1 ! -name "pre_migration_*" \
+        -exec mv {} "${ARCHIVE_DIR}/" \;
 
-    # Find most recent autobackup and tell the user about it
-    LATEST_BACKUP=$(ls -t "${AUTOBACKUP_DIR}"/*.unf 2>/dev/null | head -1 || true)
+    log "MIGRATION: Archive complete. UniFi will start fresh and show the setup wizard."
+
+    # Find most recent autobackup in the archive and tell the user about it
+    LATEST_BACKUP=$(ls -t "${ARCHIVE_DIR}/backup/autobackup/"*.unf 2>/dev/null | head -1 || true)
     if [ -n "${LATEST_BACKUP}" ]; then
         log "MIGRATION: *** ACTION REQUIRED ***"
         log "MIGRATION: Autobackup found: ${LATEST_BACKUP}"
         log "MIGRATION: After completing setup, restore via:"
         log "MIGRATION:   Settings → System → Backup → Restore"
     else
-        log "MIGRATION: WARNING: No autobackup found in ${AUTOBACKUP_DIR}"
+        log "MIGRATION: WARNING: No autobackup found."
         log "MIGRATION: You may need to reconfigure UniFi from scratch."
-        log "MIGRATION: Your old database files are preserved at: ${ARCHIVE_DIR}"
+        log "MIGRATION: Your old files are preserved at: ${ARCHIVE_DIR}"
     fi
 fi
 
