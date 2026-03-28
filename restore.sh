@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# restore.sh — restore MongoDB data into a running mongo:7.0 container.
+# restore.sh — restore MongoDB data into a running mongo:8.0 container.
 #
 # Run this AFTER:
 #   docker compose down
-#   docker compose up -d mongo   (starts the new mongo:7.0 service)
+#   docker compose up -d mongo   (starts the new mongo:8.0 service)
 #
 # For docker-compose deployments with an external MongoDB container only.
 
@@ -29,11 +29,11 @@ if ! docker compose ps --services --filter "status=running" 2>/dev/null | grep -
     exit 1
 fi
 
-log "Restoring MongoDB data into mongo:7.0..."
+log "Restoring MongoDB data into mongo:8.0..."
 docker run --rm \
     --network "${NETWORK}" \
     -v "${BACKUP_DIR}:/dump" \
-    mongo:7.0 \
+    mongo:8.0 \
     mongorestore --host mongo --drop /dump
 
 log "Restore complete."

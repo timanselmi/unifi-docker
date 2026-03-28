@@ -6,7 +6,7 @@
 # Skipped automatically when DB_URI is set (external MongoDB users
 # should use backup.sh + restore.sh instead).
 #
-# On first launch after upgrading from a pre-7.0 image:
+# On first launch after upgrading from a pre-8.0 image:
 #   - Archives the old MongoDB data directory
 #   - Logs the most recent autobackup .unf path so you know what to restore
 
@@ -21,18 +21,18 @@ if [ -n "${DB_URI:-}" ]; then
     exit 0
 fi
 
-# Marker present → already migrated or fresh 7.0 install, nothing to do
+# Marker present → already migrated or fresh 8.0 install, nothing to do
 if [ -f "${MARKER_FILE}" ]; then
     exit 0
 fi
 
-# Marker absent + db directory exists → pre-7.0 data, needs archiving
+# Marker absent + db directory exists → pre-8.0 data, needs archiving
 if [ -d "${DB_DIR}" ]; then
     ARCHIVE_DIR="${DATADIR}/db_archive_$(date +%Y%m%d_%H%M%S)"
     log "MIGRATION: Old MongoDB data directory detected (no version marker present)."
     log "MIGRATION: Archiving ${DB_DIR} → ${ARCHIVE_DIR}"
     mv "${DB_DIR}" "${ARCHIVE_DIR}"
-    log "MIGRATION: Archive complete. MongoDB 7.0 will initialise a fresh database."
+    log "MIGRATION: Archive complete. MongoDB 8.0 will initialise a fresh database."
 
     # Find most recent autobackup and tell the user about it
     LATEST_BACKUP=$(ls -t "${AUTOBACKUP_DIR}"/*.unf 2>/dev/null | head -1 || true)
@@ -49,4 +49,4 @@ if [ -d "${DB_DIR}" ]; then
 fi
 
 # Write version marker so this only runs once
-echo "7.0" > "${MARKER_FILE}"
+echo "8.0" > "${MARKER_FILE}"

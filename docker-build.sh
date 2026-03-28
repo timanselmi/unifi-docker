@@ -47,6 +47,15 @@ apt-get install -qy --no-install-recommends \
 echo 'deb [signed-by=/etc/apt/keyrings/ubnt-unifi.gpg] https://www.ui.com/downloads/unifi/debian stable ubiquiti' | tee /etc/apt/sources.list.d/100-ubnt-unifi.list
 tryfail addKey 06E85760C0A52C50
 
+# Add MongoDB 8.0 repo so apt can satisfy the UniFi package dependency.
+# Ubuntu 24.04 does not ship MongoDB in its default repos.
+# MongoDB 8.0 is the first release with native Ubuntu 24.04 (Noble) support.
+curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
+    gpg --dearmor -o /etc/apt/keyrings/mongodb-server-8.0.gpg
+echo "deb [ arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | \
+    tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+apt-get update
+
 if [ -d "/usr/local/docker/pre_build/$(dpkg --print-architecture)" ]; then
     find "/usr/local/docker/pre_build/$(dpkg --print-architecture)" -type f -exec '{}' \;
 fi

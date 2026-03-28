@@ -1,6 +1,6 @@
 services:
   mongo:
-    image: mongo:7.0
+    image: mongo:8.0
     container_name: ${COMPOSE_PROJECT_NAME}_mongo
     networks:
       - unifi
