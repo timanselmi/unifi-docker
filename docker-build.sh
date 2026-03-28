@@ -10,17 +10,21 @@ tryfail() {
     (exit $s)
 }
 
-# Try multiple keyservers in case of failure
+# Import Ubiquiti signing key into /etc/apt/keyrings/ (replaces deprecated apt-key)
 addKey() {
-    for server in $(shuf -e ha.pool.sks-keyservers.net \
-        hkp://p80.pool.sks-keyservers.net:80 \
+    mkdir -p /etc/apt/keyrings
+    GNUPGHOME=$(mktemp -d)
+    export GNUPGHOME
+    for server in hkp://keyserver.ubuntu.com:80 \
         keyserver.ubuntu.com \
-        hkp://keyserver.ubuntu.com:80 \
-        pgp.mit.edu) ; do \
-        if apt-key adv --keyserver "$server" --recv "$1"; then
-            exit 0
+        hkp://pgp.mit.edu:80; do
+        if gpg --keyserver "$server" --recv-keys "$1" 2>/dev/null; then
+            gpg --export "$1" | gpg --dearmor -o /etc/apt/keyrings/ubnt-unifi.gpg
+            rm -rf "$GNUPGHOME"
+            return 0
         fi
     done
+    rm -rf "$GNUPGHOME"
     return 1
 }
 
@@ -36,12 +40,12 @@ apt-get install -qy --no-install-recommends \
     dirmngr \
     gpg \
     gpg-agent \
-    openjdk-17-jre-headless \
+    openjdk-21-jre-headless \
     procps \
     libcap2-bin \
     tzdata
-echo 'deb https://www.ui.com/downloads/unifi/debian stable ubiquiti' | tee /etc/apt/sources.list.d/100-ubnt-unifi.list
-tryfail apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 06E85760C0A52C50
+echo 'deb [signed-by=/etc/apt/keyrings/ubnt-unifi.gpg] https://www.ui.com/downloads/unifi/debian stable ubiquiti' | tee /etc/apt/sources.list.d/100-ubnt-unifi.list
+tryfail addKey 06E85760C0A52C50
 
 if [ -d "/usr/local/docker/pre_build/$(dpkg --print-architecture)" ]; then
     find "/usr/local/docker/pre_build/$(dpkg --print-architecture)" -type f -exec '{}' \;

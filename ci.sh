@@ -17,9 +17,9 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
     .
 
-  docker build -t unifi:latest .
+  docker build --label "unifi=test" -t unifi:test .
 
-  docker run -d -p 8443:8443 -p 8080:8080 -e PKGURL --name unifi unifi:latest
+  docker run -d -p 8443:8443 -p 8080:8080 -e PKGURL --name unifi unifi:test
   docker ps | grep -q unifi
   docker logs unifi
   sleep 10 && curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 60 -kILs --fail http://127.0.0.1:8080 || exit 1

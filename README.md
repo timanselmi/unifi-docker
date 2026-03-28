@@ -99,6 +99,53 @@ The upgrade process is:
 2. Stop the current container (see above)
 3. Enter `docker run...` with the newer container tag (see [Current Information](#current-information) section below.)
 
+## Migrating MongoDB (3.6 → 7.0)
+
+UniFi 10.2.97+ requires MongoDB 7.0. MongoDB 3.6 data files are not compatible with 7.0,
+so a dump-and-restore migration is required. There are two paths depending on how you run
+the controller.
+
+> **Before upgrading:** ensure autobackups are enabled in
+> Settings → System → Backup so you have a `.unf` file to fall back on.
+
+### Path A — docker-compose (external MongoDB)
+
+Use the included `backup.sh` and `restore.sh` scripts. Run `backup.sh` **while the old
+stack is still running**, then follow the prompts:
+
+```bash
+git pull                        # fetch new compose.yaml, backup.sh, restore.sh
+chmod +x backup.sh restore.sh
+./backup.sh                     # dumps mongo:3.6 → ./mongo-backup/ (old stack must be up)
+docker compose down
+docker compose up -d mongo      # starts mongo:7.0 only — controller stays down
+./restore.sh                    # restores BSON dump into mongo:7.0
+docker compose up -d            # bring up the full stack
+```
+
+The BSON dump is saved to `./mongo-backup/` using a bind mount — no Docker volume
+creation needed.
+
+### Path B — Standalone container (embedded MongoDB)
+
+The `migration/99-mongo-migrate.sh` script is baked into the image and runs automatically
+on container start via `run-parts`. No manual steps required.
+
+On first launch of the new image it will:
+
+1. Detect old MongoDB data (absence of `.mongo_version_marker` in `/unifi/data/`)
+2. Archive the old `db/` directory to `db_archive_<timestamp>/` (data preserved, not deleted)
+3. Log the path of the most recent autobackup `.unf` file
+4. Write a version marker so the migration only runs once
+
+After the container starts, complete the setup wizard then restore your config via:
+**Settings → System → Backup → Restore** and select the `.unf` file shown in the logs.
+
+```bash
+# View migration log output:
+docker logs <container-name> 2>&1 | grep MIGRATION
+```
+
 ## Options on the Command Line
 
 The options for the `docker run...` command are:
@@ -150,7 +197,7 @@ For Unifi-in-Docker, this uses the most recent stable version.
 
 | Tag                                                                                         | Description                                       | Changelog                                                                                                                        |
 |---------------------------------------------------------------------------------------------|---------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| [`latest` `v10.0.162`](https://github.com/jacobalberty/unifi-docker/blob/master/Dockerfile) | Current Stable: Version 10.0.162 as of 2025-12-04 | [Change Log 10.0.162](https://community.ui.com/releases/UniFi-Network-Application-10-0-162/2efd581a-3a55-4c36-80bf-1267dbfc2aee) |
+| [`latest` `v10.2.97`](https://github.com/jacobalberty/unifi-docker/blob/master/Dockerfile) | Current Stable: Version 10.2.97 as of 2026-03-28 | [Change Log 10.2.97](https://community.ui.com/releases/UniFi-Network-Application-10-2-97/7c599511-d03a-4dce-8832-93b90cbaa41d) |
 | [`stable-6`](https://github.com/jacobalberty/unifi-docker/blob/stable-6/Dockerfile)         | Final stable version 6 (6.5.55)                   | [Change Log 6.5.55](https://community.ui.com/releases/UniFi-Network-Application-6-5-55/48c64137-4a4a-41f7-b7e4-3bee505ae16e)     |
 | [`stable-5`](https://github.com/jacobalberty/unifi-docker/blob/stable-5/Dockerfile)         | Final stable version 5 (5.4.23)                   | [Change Log 5.14.23](https://community.ui.com/releases/UniFi-Network-Controller-5-14-23/daf90732-30ad-48ee-81e7-1dcb374eba2a)    |
 

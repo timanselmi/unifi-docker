@@ -25,7 +25,7 @@ exit_handler() {
     done
     # shutdown mongod
     if [ -f ${MONGOLOCK} ]; then
-        mongo localhost:${MONGOPORT} --eval "db.getSiblingDB('admin').shutdownServer()" >/dev/null 2>&1
+        mongosh localhost:${MONGOPORT} --eval "db.getSiblingDB('admin').shutdownServer()" >/dev/null 2>&1
     fi
     exit ${?};
 }

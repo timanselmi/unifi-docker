@@ -1,16 +1,16 @@
-FROM golang:1.24-bullseye AS permset
+FROM golang:1.26-bookworm AS permset
 WORKDIR /src
 RUN git clone https://github.com/jacobalberty/permset.git /src && \
     mkdir -p /out && \
-    go build -ldflags "-X main.chownDir=/unifi" -o /out/permset
+    go build -ldflags "-X main.chownDir=/unifi -extldflags '-static'" -o /out/permset
 
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
 LABEL maintainer="Jacob Alberty <jacob.alberty@foundigital.com>"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG PKGURL=https://dl.ui.com/unifi/10.0.162/unifi_sysvinit_all.deb
+ARG PKGURL=https://dl.ui.com/unifi/10.2.97/unifi_sysvinit_all.deb
 
 ENV BASEDIR=/usr/lib/unifi \
     DATADIR=/unifi/data \
@@ -47,9 +47,11 @@ COPY docker-healthcheck.sh /usr/local/bin/
 COPY docker-build.sh /usr/local/bin/
 COPY functions /usr/unifi/functions
 COPY import_cert /usr/unifi/init.d/
+COPY migration/99-mongo-migrate.sh /usr/unifi/init.d/
 COPY pre_build /usr/local/docker/pre_build
 RUN chmod +rx /usr/local/bin/docker-entrypoint.sh \
  && chmod +rx /usr/unifi/init.d/import_cert \
+ && chmod +rx /usr/unifi/init.d/99-mongo-migrate.sh \
  && chmod +r  /usr/unifi/functions \
  && chmod +rx /usr/local/bin/docker-healthcheck.sh \
  && chmod +rx /usr/local/bin/docker-build.sh \
