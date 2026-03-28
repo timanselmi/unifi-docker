@@ -34,6 +34,13 @@ if [ -d "${DB_DIR}" ]; then
     mv "${DB_DIR}" "${ARCHIVE_DIR}"
     log "MIGRATION: Archive complete. MongoDB 8.0 will initialise a fresh database."
 
+    # Clear setup-completed flag so the first-run wizard appears
+    SYSPROPS="${DATADIR}/system.properties"
+    if [ -f "${SYSPROPS}" ] && grep -q "^is_setup_completed" "${SYSPROPS}"; then
+        sed -i '/^is_setup_completed/d' "${SYSPROPS}"
+        log "MIGRATION: Cleared is_setup_completed from system.properties — setup wizard will appear."
+    fi
+
     # Find most recent autobackup and tell the user about it
     LATEST_BACKUP=$(ls -t "${AUTOBACKUP_DIR}"/*.unf 2>/dev/null | head -1 || true)
     if [ -n "${LATEST_BACKUP}" ]; then
