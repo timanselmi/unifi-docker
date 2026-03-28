@@ -1,3 +1,13 @@
+> [!WARNING]
+> **Before upgrading: back up your data and read the migration guide.**
+> UniFi 10.2.97+ requires MongoDB 8.0. MongoDB 3.6 data files are **not compatible** and will
+> not be migrated automatically — you must dump your data before upgrading or it will be lost.
+> This upgrade also introduces new CPU hardware requirements (AVX on x86-64, ARMv8.2-A on ARM)
+> that may prevent MongoDB from starting on older hardware.
+>
+> See the [Hardware Requirements](#hardware-requirements-mongodb-36--80) and
+> [Migration Guide](#migrating-mongodb-36--80) sections before proceeding.
+
 # Unifi-in-Docker (unifi-docker)
 
 This repo contains a Dockerized version of [Ubiqiti Network's](https://www.ubnt.com/) Unifi Controller.
