@@ -40,10 +40,17 @@ apt-get install -qy --no-install-recommends \
     dirmngr \
     gpg \
     gpg-agent \
-    openjdk-21-jre-headless \
     procps \
     libcap2-bin \
     tzdata
+
+# Add Eclipse Temurin repo and install Java 25
+curl -fsSL https://packages.adoptium.net/artifactory/api/gpg/key/public | \
+    gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg
+echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb noble main" | \
+    tee /etc/apt/sources.list.d/adoptium.list
+apt-get update
+apt-get install -qy --no-install-recommends temurin-25-jdk
 echo 'deb [signed-by=/etc/apt/keyrings/ubnt-unifi.gpg] https://www.ui.com/downloads/unifi/debian stable ubiquiti' | tee /etc/apt/sources.list.d/100-ubnt-unifi.list
 tryfail addKey 06E85760C0A52C50
 
