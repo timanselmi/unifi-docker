@@ -1,9 +1,14 @@
-> [!WARNING]
-> **Before upgrading: back up your data and read the migration guide.**
-> UniFi 10.2.97+ requires MongoDB 8.0. MongoDB 3.6 data files are **not compatible** and will
-> not be migrated automatically — you must dump your data before upgrading or it will be lost.
-> This upgrade also introduces new CPU hardware requirements (AVX on x86-64, ARMv8.2-A on ARM)
-> that may prevent MongoDB from starting on older hardware.
+> [!CAUTION]
+> **Security Advisory: update to 10.2.97 as soon as possible.**
+> Ubiquiti has published [Security Advisory Bulletin 062](https://community.ui.com/releases/Security-Advisory-Bulletin-062-062/c29719c0-405e-4d4a-8f26-e343e99f931b)
+> which affects earlier versions of the UniFi Network Application. Upgrade immediately.
+>
+> **10.2.97 requires MongoDB 8.0, newer Java, and Ubuntu 22.04+ inside the container.**
+> Tags for this release carry a `-mongo-v8` suffix (e.g. `v10.2.97-mongo-v8`, `latest-mongo-v8`)
+> so that users on `latest` or `v10` are **not** silently upgraded. You must opt in by pulling
+> a `-mongo-v8` tag. MongoDB 3.6 data files are not compatible — you must migrate before upgrading.
+> New CPU requirements (AVX on x86-64, ARMv8.2-A on ARM) may also prevent MongoDB from starting
+> on older hardware.
 >
 > See the [Hardware Requirements](#hardware-requirements-mongodb-36--80) and
 > [Migration Guide](#migrating-mongodb-36--80) sections before proceeding.
@@ -260,11 +265,18 @@ _Note:_ In Docker, specifying an image with no tag
 (e.g., `jacobalberty/unifi`) gets the "latest" tag.
 For Unifi-in-Docker, this uses the most recent stable version.
 
-| Tag                                                                                         | Description                                       | Changelog                                                                                                                        |
-|---------------------------------------------------------------------------------------------|---------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| [`latest` `v10.2.97`](https://github.com/jacobalberty/unifi-docker/blob/master/Dockerfile) | Current Stable: Version 10.2.97 as of 2026-03-28 | [Change Log 10.2.97](https://community.ui.com/releases/UniFi-Network-Application-10-2-97/7c599511-d03a-4dce-8832-93b90cbaa41d) |
-| [`stable-6`](https://github.com/jacobalberty/unifi-docker/blob/stable-6/Dockerfile)         | Final stable version 6 (6.5.55)                   | [Change Log 6.5.55](https://community.ui.com/releases/UniFi-Network-Application-6-5-55/48c64137-4a4a-41f7-b7e4-3bee505ae16e)     |
-| [`stable-5`](https://github.com/jacobalberty/unifi-docker/blob/stable-5/Dockerfile)         | Final stable version 5 (5.4.23)                   | [Change Log 5.14.23](https://community.ui.com/releases/UniFi-Network-Controller-5-14-23/daf90732-30ad-48ee-81e7-1dcb374eba2a)    |
+| Tag                                                                                                           | Description                                                                                        | Changelog                                                                                                                        |
+|---------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| [`latest-mongo-v8` `v10.2.97-mongo-v8`](https://github.com/jacobalberty/unifi-docker/blob/master/Dockerfile) | Current Stable: Version 10.2.97 as of 2026-03-28. **Requires MongoDB 8.0, Java 17+, Ubuntu 22.04+.** See [Security Advisory 062](https://community.ui.com/releases/Security-Advisory-Bulletin-062-062/c29719c0-405e-4d4a-8f26-e343e99f931b) and the [Migration Guide](#migrating-mongodb-36--80). | [Change Log 10.2.97](https://community.ui.com/releases/UniFi-Network-Application-10-2-97/7c599511-d03a-4dce-8832-93b90cbaa41d) |
+| [`latest` `v10` `v10.1` `v10.1.84`](https://github.com/jacobalberty/unifi-docker/blob/v10.1.84/Dockerfile)   | **⚠ VULNERABLE — do not use.** Version 10.1.84. Affected by [Security Advisory Bulletin 062](https://community.ui.com/releases/Security-Advisory-Bulletin-062-062/c29719c0-405e-4d4a-8f26-e343e99f931b). Upgrade to `latest-mongo-v8` immediately. | [Change Log 10.1.84](https://community.ui.com/releases/UniFi-Network-Application-10-1-84/a34c2a8e-fc41-4b6f-aa3e-1c614f26e428) |
+| [`stable-6`](https://github.com/jacobalberty/unifi-docker/blob/stable-6/Dockerfile)                          | Final stable version 6 (6.5.55)                                                                    | [Change Log 6.5.55](https://community.ui.com/releases/UniFi-Network-Application-6-5-55/48c64137-4a4a-41f7-b7e4-3bee505ae16e)     |
+| [`stable-5`](https://github.com/jacobalberty/unifi-docker/blob/stable-5/Dockerfile)                          | Final stable version 5 (5.4.23)                                                                    | [Change Log 5.14.23](https://community.ui.com/releases/UniFi-Network-Controller-5-14-23/daf90732-30ad-48ee-81e7-1dcb374eba2a)    |
+
+> **Note on the `-mongo-v8` tag suffix:** This suffix is temporary and signals that this release
+> requires a breaking infrastructure change (MongoDB 3.6 → 8.0, Ubuntu 18.04/20.04 → 22.04+,
+> Java 11 → 17+). It prevents anyone pinned to `latest` or `v10` from being silently upgraded.
+> Once the migration tooling is considered stable and the majority of users have transitioned,
+> the suffix will be dropped and `latest`/`v10` will resume tracking the current release.
 
 ### multiarch
 
