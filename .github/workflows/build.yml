@@ -3,6 +3,7 @@ name: Build Docker image
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch: 
 
 env:
   TEST_TAG: jacobalberty/unifi:test
