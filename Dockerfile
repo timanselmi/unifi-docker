@@ -10,7 +10,7 @@ RUN set -eux; \
 
 
 # ---------- Runtime image ----------
-FROM ubuntu:20.04
+FROM ubuntu:26.04
 
 LABEL maintainer="Jacob Alberty <jacob.alberty@foundigital.com>"
 
